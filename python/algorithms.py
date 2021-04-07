@@ -3,7 +3,7 @@ import cvxpy as cp
 import tensorflow as tf
 import numpy as np
 
-def mpc_cntrl_sequence(state_k, dsle_net, u0, **kwargs):
+def mpc(state_k, dsle_net, u0, **kwargs):
     assert u0.ndim == 1 and state_k.ndim == 1
 
     x0 = np.concatenate(state_k, u0, axis=0)
@@ -15,12 +15,12 @@ def mpc_cntrl_sequence(state_k, dsle_net, u0, **kwargs):
     if 'Aeq' in kwargs:
         assert 'beq' in kwargs
         # Equality constraint for state_k
-        Aeq = np.concatenate((np.identity(len(state_k)), np.zeros(len(state_k), len(u0))), axis=1)
+        aeq = np.concatenate((np.identity(len(state_k)), np.zeros(len(state_k), len(u0))), axis=1)
         beq = state_k
 
         # Equality constraint for input defined by user, adapted to DSLEA with x = [state_k;u0]
         kwargs['Aeq'] = np.concatenate((np.zeros(len(kwargs['beq']), len(state_k)), kwargs['Aeq']), axis=1)
-        kwargs['Aeq'] = np.concatenate((Aeq, kwargs['Aeq']), axis=0)
+        kwargs['Aeq'] = np.concatenate((aeq, kwargs['Aeq']), axis=0)
         kwargs['beq'] = np.concatenate((beq, kwargs['beq']), axis=0)
     else:
         kwargs['Aeq'] = np.concatenate((np.identity(len(state_k)), np.zeros(len(state_k), len(u0))), axis=1)
@@ -110,7 +110,7 @@ def dh(x, dsle_net):
     # We additionally take into account the normalization of the input here via var_in_inverse and it_mean_in.
 
     var_in_inverse = np.diag(np.reciprocal(dsle_net.var_in))
-    vec_exp = np.exp(np.transpose(dsle_net.kWeightsBtm) * var_in_inverse * (x - dsle_net.mean_in)
+    vec_exp = np.exp(np.matmul(np.matmul(np.transpose(dsle_net.kWeightsBtm), var_in_inverse), (x - dsle_net.mean_in))
                      + np.transpose(dsle_net.kBiasBtm))
 
     # The return value uses this vector to
@@ -123,7 +123,7 @@ def dh(x, dsle_net):
     #   b) compute the denominator as the sum over vec_exp and the scaling factor of the output.The offset of the
     #      output is absent as this is the derivative of h.
 
-    return (var_in_inverse * dsle_net.kWeightsBtm * vec_exp) / np.sum(vec_exp) * dsle_net.var_out
+    return np.matmul(np.matmul(var_in_inverse, dsle_net.kWeightsBtm), vec_exp) / (np.sum(vec_exp) * dsle_net.var_out)
 
 def gstar(x, dh, dsle_net):
 
@@ -131,7 +131,7 @@ def gstar(x, dh, dsle_net):
     # concave part. See detailed comments for computation in function dh.
 
     var_in_inverse = np.diag(np.reciprocal(dsle_net.var_in))
-    vec_exp = np.exp(np.transpose(dsle_net.kWeightsTop) * var_in_inverse * (x - dsle_net.mean_in)
+    vec_exp = np.exp(np.matmul(np.matmul(np.transpose(dsle_net.kWeightsTop), var_in_inverse),  (x - dsle_net.mean_in))
                      + np.transpose(dsle_net.kBiasTop))
 
-    return np.log(np.sum(vec_exp))-dsle_net.mean_out/dsle_net.var_out-np.transpose(x)*dh
+    return np.log(np.sum(vec_exp))-dsle_net.mean_out/dsle_net.var_out-x.dot(dh)

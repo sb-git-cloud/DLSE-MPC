@@ -5,8 +5,8 @@ from tensorflow.keras.layers import Dense, Input, Subtract, Activation, Layer
 from tensorflow.keras import backend
 from tensorflow.keras.initializers import Ones
 import numpy as np
+import pickle
 from dsle_mpc import data
-
 
 class Exploglayer(Layer):
 
@@ -17,21 +17,22 @@ class Exploglayer(Layer):
         exp_activ = backend.exp
 
         # Define exponential and logarithmic layers
-        self.layerexp = Dense(nhiddenLayers, activation=Activation(exp_activ))  # first hidden layer
+        self.layerexp = Dense(nhiddenLayers, activation=Activation(exp_activ), name='exp')  # first hidden layer
         self.layerlog = Dense(1, use_bias=False, kernel_initializer=Ones, activation=Activation(log_activ),
-                              trainable=False)  # output layer
+                              trainable=False, name='log')  # output layer
 
     def call(self, inputs):
         x = self.layerexp(inputs)
         return self.layerlog(x)
-
 
 class Dslenet(Model):
 
     def __init__(self, nhiddenLayers=10):
         super(Dslenet, self).__init__()
         self.top = Exploglayer(nhiddenLayers)
+        self.top._name = 'top'
         self.bottom = Exploglayer(nhiddenLayers)
+        self.bottom._name = 'btm'
 
     def call(self, inputs):
         # Top layers
@@ -57,17 +58,7 @@ class Dslenet(Model):
         if not ('epochs' in kwargs):
             kwargs['epochs'] = 100
         super(Dslenet, self).fit(x, y, *args, **kwargs)
-
-        # Save weights
-        self.mean_in = tf.make_ndarray(tf.make_tensor_proto(self.layernorminput.mean))
-        self.var_in = tf.make_ndarray(tf.make_tensor_proto(self.layernorminput.variance))
-        self.mean_out = float(tf.make_ndarray(tf.make_tensor_proto(self.layernormoutput.mean)))
-        self.var_out = float(tf.make_ndarray(tf.make_tensor_proto(self.layernormoutput.variance)))
-        weights = self.get_weights()
-        self.kWeightsTop = weights[0]
-        self.kWeightsBtm = weights[3]
-        self.kBiasTop = weights[1]
-        self.kBiasBtm = weights[4]
+        self.set_weights(self.get_weights())
 
     def compile(self, *args, **kwargs):
         # Choose mean squared error as default loss function
@@ -75,8 +66,22 @@ class Dslenet(Model):
             kwargs['loss'] = 'mse'
         super(Dslenet, self).compile(*args, **kwargs)
 
-    def export_weights_npz(self):
-        np.savez('params',
+    def set_weights(self, weights):
+        # Save weights
+        self.mean_in = tf.make_ndarray(tf.make_tensor_proto(self.layernorminput.mean))
+        self.var_in = tf.make_ndarray(tf.make_tensor_proto(self.layernorminput.variance))
+        self.mean_out = float(tf.make_ndarray(tf.make_tensor_proto(self.layernormoutput.mean)))
+        self.var_out = float(tf.make_ndarray(tf.make_tensor_proto(self.layernormoutput.variance)))
+
+        self.kWeightsTop = weights[0]
+        self.kWeightsBtm = weights[3]
+        self.kBiasTop = weights[1]
+        self.kBiasBtm = weights[4]
+
+        super(Dslenet, self).set_weights(weights)
+
+    def export_weights_npz(self, filename):
+        np.savez(filename,
                  kWeightsTop=self.kWeightsTop,
                  kWeightsBtm=self.kWeightsBtm,
                  kBiasTop=self.kBiasTop,
@@ -85,3 +90,19 @@ class Dslenet(Model):
                  kVarIn=self.var_in,
                  kMeanOut=self.mean_out,
                  kVarOut=self.var_out)
+
+    def import_weights_npz(self, filename):
+
+        data = np.load(filename)
+        self.layernorminput.mean = data['kMeanIn']
+        self.layernorminput.variance = data['kVarIn']
+        self.layernormoutput.mean = data['kMeanOut']
+        self.layernormoutput.variance = data['kVarOut']
+
+        weights = self.get_weights()
+        weights[0] = data['kWeightsTop']
+        weights[3] = data['kWeightsBtm']
+        weights[1] = data['kBiasTop']
+        weights[4] = data['kBiasBtm']
+
+        self.set_weights(weights)
