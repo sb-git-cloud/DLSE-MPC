@@ -3,7 +3,7 @@ Difference of Log-Sum-Exp Neural Networks to Solve Data-Driven Model  Predictive
 
 The python version is currently in beta stage. It draws on cvxpy and tensorflow and is separated into three parts.
 
-+ "data.py" contains the data class whose main purpose is to load and normalize the input and output data. The 
++ "data.py" contains the data class whose main purpose is to load and extract statistics from the input and output data. The 
 data object also serves as an input for the neural network.
 
 + "networks.py" provides the DSLE neural network class, composed of two log-sum-exp layers.
