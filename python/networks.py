@@ -5,10 +5,10 @@ from tensorflow.keras import backend
 from tensorflow.keras.initializers import Ones
 import numpy as np
 
-class Exploglayer(Layer):
+class LogSumExpLayer(Layer):
 
     def __init__(self, nhiddenLayers=10):
-        super(Exploglayer, self).__init__()
+        super(LogSumExpLayer, self).__init__()
         # Activation functions
         log_activ = backend.log
         exp_activ = backend.exp
@@ -22,19 +22,19 @@ class Exploglayer(Layer):
         x = self.layerexp(inputs)
         return self.layerlog(x)
 
-class Dslenet(Model):
+class DsleNet(Model):
 
     def __init__(self, data, nhiddenLayers=10):
-        super(Dslenet, self).__init__()
+        super(DsleNet, self).__init__()
         self.layernorminput = data.layernorminput
         self.layernorminput._name = 'prepro_input'
 
         self.layernormoutput = data.layernormoutput
         self.layernormoutput._name = 'prepro_output'
 
-        self.top = Exploglayer(nhiddenLayers)
+        self.top = LogSumExpLayer(nhiddenLayers)
         self.top._name = 'top'
-        self.bottom = Exploglayer(nhiddenLayers)
+        self.bottom = LogSumExpLayer(nhiddenLayers)
         self.bottom._name = 'btm'
 
     def call(self, inputs):
@@ -52,7 +52,7 @@ class Dslenet(Model):
         # Define in- and outputs
         x = data.input
         y = data.output
-        super(Dslenet, self).fit(x, y, *args, **kwargs)
+        super(DsleNet, self).fit(x, y, *args, **kwargs)
 
     def export_weights_npz(self, filename):
         # Export weights and parameters of preprocessing layer to npz file

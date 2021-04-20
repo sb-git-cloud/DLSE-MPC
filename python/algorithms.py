@@ -99,7 +99,6 @@ class DsleaProblem:
         return xk, self.dh_cppar.value
 
     def dh(self, x):
-
         # Computation following
         #   G.C.Calafiore, S.Gaubert, and C.Possieri, “A universal approximation result for difference of log - sum -
         #   exp neural networks,” IEEE Transactions on Neural Networks and Learning Systems, 2020.
@@ -126,7 +125,7 @@ class DsleaProblem:
 
         var_in_inverse = np.diag(np.reciprocal(self.var_in))
         vec_exp = np.exp(np.matmul(np.matmul(np.transpose(self.kWeightsBtm), var_in_inverse), (x - self.mean_in))
-                         + np.transpose(self.kBiasBtm))
+                         + self.kBiasBtm)
 
         # The return value uses this vector to
         #   a) compute the numerator by the matrix multiplication
@@ -152,4 +151,4 @@ class DsleaProblem:
         #                  + cp.transpose(self.kBiasTop))
         # return cp.log(cp.sum(vec_exp)) - self.mean_out / self.var_out - cp.transpose(x)@dh
         return cp.log_sum_exp(cp.matmul(cp.matmul(cp.transpose(self.kWeightsTop), var_in_inverse), (x-self.mean_in))
-                              + cp.transpose(self.kBiasTop)) - self.mean_out / self.var_out - cp.transpose(x)@dh
+                              + self.kBiasTop) - self.mean_out / self.var_out - cp.transpose(x)@dh
