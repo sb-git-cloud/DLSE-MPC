@@ -5,7 +5,7 @@ Matlab and python libraries for data-driven MPC, related to publication "On the 
 Please see folders for further details.
 
 # License
-Copyright (c) 2021 Sven Br{\"u}ggemann and Corrado Possieri.
+Copyright (c) 2021 Sven Brüggemann and Corrado Possieri.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
