@@ -14,8 +14,9 @@ class LogSumExpLayer(Layer):
         exp_activ = backend.exp
 
         # Define exponential and logarithmic layers
-        self.layerexp = Dense(nhiddenLayers, activation=Activation(exp_activ), name='exp')  # first hidden layer
-        self.layerlog = Dense(1, use_bias=False, kernel_initializer=Ones, activation=Activation(log_activ),
+        self.layerexp = Dense(nhiddenLayers, kernel_initializer=Ones(), bias_initializer=Ones(),
+                              activation=Activation(exp_activ), name='exp')  # first hidden layer
+        self.layerlog = Dense(1, use_bias=False, kernel_initializer=Ones(), activation=Activation(log_activ),
                               trainable=False, name='log')  # output layer
 
     def call(self, inputs):

@@ -34,6 +34,9 @@ an MPC in a standard form.
     model = networks.Dslenet(data, 3)  # 3 hidden neurons for top/bottom half respectively
     model.compile(loss='mse')  # define loss function
     model.fit(data, epochs=100)  # fit data
+    model.save('my_model')  # saves model
+
+    my_model = tf.keras.models.load_model('my_model')  # load previously saved model  
 
 ### MPC code snippet
 Once the network is trained, we can generate a suboptimal control sequence by first defining the constraints, e.g. 
