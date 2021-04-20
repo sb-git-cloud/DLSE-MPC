@@ -43,7 +43,7 @@ Once the network is trained, we can generate a suboptimal control sequence by fi
 
 and then instantiating the MPC using **kwargs via
     
-    mpc = networks.MpcProblem(model, 5, 2, lb=lb, ub=ub)  # state dimension = 5, inout dimensions = 2
+    mpc = networks.MpcProblem(model, 5, 2, lb=lb, ub=ub)  # state dimension = 5, input dimensions = 2, adding lower and upper bound
 
 and at each time instance calling
 
