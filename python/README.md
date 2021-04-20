@@ -33,7 +33,9 @@ an MPC in a standard form.
 > data = data.Data('data.mat')  # load data with u as inputs and y as outputs
 > 
 > model = networks.Dslenet(data, 3)  # 3 hidden neurons for top/bottom half respectively
-> model.compile(loss='mse')  # define loss function 
+> 
+> model.compile(loss='mse')  # define loss function
+> 
 > model.fit(data, epochs=100)  # fit data
 
 ### MPC code snippet
