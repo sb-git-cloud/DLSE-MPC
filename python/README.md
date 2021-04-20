@@ -30,22 +30,22 @@ paper, using cvxpy to solve the convex optimization problem. The class "MpcProbl
 an MPC in a standard form.
 
 ### Example code train network
-> data = data.Data('data.mat')  # load data with u as inputs and y as outputs
-> 
-> model = networks.Dslenet(data, 3)  # 3 hidden neurons for top/bottom half respectively
-> 
-> model.compile(loss='mse')  # define loss function
-> 
-> model.fit(data, epochs=100)  # fit data
+    data = data.Data('data.mat')  # load data with u as inputs and y as outputs
+    model = networks.Dslenet(data, 3)  # 3 hidden neurons for top/bottom half respectively
+    model.compile(loss='mse')  # define loss function
+    model.fit(data, epochs=100)  # fit data
 
 ### MPC code snippet
-Once the network is trained, we can generate a suboptimal control sequence by first defining the constraints, e.g.
-> lb = np.array([0,0,0,0,0,0])  # lower bound for input sequence with MPC horizon N=3
-> ub = np.array([1,2,1,2,1,2])  # upper bound for input sequence with MPC horizon N=3
+Once the network is trained, we can generate a suboptimal control sequence by first defining the constraints, e.g. 
+    
+    lb = np.array([0,0,0,0,0,0])  # lower bound for input sequence with MPC horizon N=3
+    ub = np.array([1,2,1,2,1,2])  # upper bound for input sequence with MPC horizon N=3
 
 and then instantiating the MPC using **kwargs via
-> mpc = networks.MpcProblem(model, 5, 2, lb=lb, ub=ub)  # state dimension = 5, inout dimensions = 2
+    
+    mpc = networks.MpcProblem(model, 5, 2, lb=lb, ub=ub)  # state dimension = 5, inout dimensions = 2
 
 and at each time instance calling
-> u0 = mpc_control  # initialize optimization problem with old optimal solution ([u_0^T, u_1^T, ... u_{N-1}^T])
-> mpc_control = mps.solve(current_state, u0).
+
+    u0 = mpc_control  # initialize optimization problem with old optimal solution ([u_0^T, u_1^T, ... u_{N-1}^T])
+    mpc_control = mps.solve(current_state, u0)
