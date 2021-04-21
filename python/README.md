@@ -19,9 +19,9 @@ input and output. This information will be used in the neural network model.
 ### networks.py
 Networks.py contains two classes. Class "LogSumExpLayer" inherits from tensorflow.keras.layers.Layer and represents the
 upper and lower half of the DSLE network, i.e. the log of the sum of the exponentials.
-The other class "DsleNet" uses this layer to compose the log-sum-exp neural network, by inhereting from 
+The other class "DsleNet" uses this layer to compose the log-sum-exp neural network, by inheriting from 
 tensorflow.keras.Model. It additionally uses the data object to add a preprocessing layer that subtracts the mean and
-divides by the variance, for each inout and output variable. Please see the tensorflow/keras documentation for details
+divides by the variance, for each input and output variable respectively. Please see the tensorflow/keras documentation for details
 on the model and layer classes.
 
 ### algorithms.py
@@ -44,11 +44,11 @@ Once the network is trained, we can generate a suboptimal control sequence by fi
     lb = np.array([0,0,0,0,0,0])  # lower bound for input sequence with MPC horizon N=3
     ub = np.array([1,2,1,2,1,2])  # upper bound for input sequence with MPC horizon N=3
 
-and then instantiating the MPC using **kwargs via
+and then instantiating the MPC
     
     mpc = networks.MpcProblem(model, 5, 2, lb=lb, ub=ub)  # state dimension = 5, input dimensions = 2, adding lower and upper bound
 
 and at each time instance calling
 
-    u0 = mpc_control  # initialize optimization problem with old optimal solution ([u_0^T, u_1^T, ... u_{N-1}^T])
+    u0 = mpc_control  # initialize optimization problem with old optimal solution ([u_0^T, u_1^T, ... u_{N-1}^T]^T)
     mpc_control = mps.solve(current_state, u0)
